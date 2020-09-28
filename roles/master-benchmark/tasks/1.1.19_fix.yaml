@@ -1,0 +1,10 @@
+---
+#this is a manual check, but this fix exists in case it is needed.
+
+    - name: 1.1.19 Ensure that the Kubernetes PKI directory and file ownership is set to root:root 
+      file:
+        group: root
+        owner: root
+        path: /etc/kubernetes/pki/ 
+        recurse: yes
+        state: directory

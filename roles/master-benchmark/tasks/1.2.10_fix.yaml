@@ -1,0 +1,15 @@
+    - name: Ensure that the admission control plugin EventRateLimit is set
+      block:
+        - name: 1.2.10 check EventRateLimit exists.
+          shell: grep enable-admission-plugins kube-apiserver.yaml | grep -c EventRateLimit
+          register: test_flag
+          ignore_errors: yes
+          changed_when: no
+
+        - name: 1.2.10 add EventRateLimit
+          lineinfile:
+            path: /etc/kubernetes/manifests/kube-apiserver.yaml
+            regexp: '^(.*enable-admission-plugins=.*)$'
+            line: '\1,EventRateLimit'
+            backrefs: yes
+          when: test_flag.stdout == "0"

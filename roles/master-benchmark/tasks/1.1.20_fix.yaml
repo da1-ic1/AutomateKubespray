@@ -1,0 +1,16 @@
+- name: 1.1.20 Ensure that the Kubernetes PKI certificate file permissions are set to 644 or more restrictive
+  block:
+
+    - name: 1.1.20 - Find files.
+      find:
+        paths: /etc/kubernetes/pki
+        patterns: "*.crt"
+      register: crt_glob
+
+    - name: 1.1.20 - Check permissions.
+      file:
+        path: "{{ item.path }}"
+        mode: "644"
+        state: file
+      with_items: "{{ crt_glob.files }}"
+

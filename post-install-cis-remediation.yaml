@@ -1,0 +1,34 @@
+---
+
+#
+# Just the controllers
+#
+- hosts: kube-master
+  any_errors_fatal: ""
+  become: yes
+  gather_facts: False
+  roles:
+    - kubespray-defaults
+    - master-benchmark
+
+#
+# Just the workers
+#
+- hosts: kube-node
+  any_errors_fatal: ""
+  gather_facts: False
+  roles:
+    - kubespray-defaults 
+    - worker-benchmark 
+
+#
+# Etcd Node
+#
+
+- hosts: etcd
+  any_errors_fatal: ""
+  become: yes
+  gather_facts: False
+  roles:
+    - kubespray-defaults 
+   #- etcd-benchmark 

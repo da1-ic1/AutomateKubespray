@@ -1,0 +1,91 @@
+- name: 3.2.1 - Create a directory hold the audit policy.
+  file:
+    path: /etc/kubernetes/policies
+    state: directory
+  
+- name: 3.2.1 - Create policy file.
+  copy:
+    dest: /etc/kubernetes/policies/audit-policy.yaml
+    content: |
+      apiVersion: audit.k8s.io/v1beta1
+      kind: Policy
+      rules:
+        # Do not log from kube-system accounts
+        - level: None
+          userGroups:
+          - system:serviceaccounts:kube-system
+        - level: None
+          users:
+          - system:apiserver
+          - system:kube-scheduler
+          - system:volume-scheduler
+          - system:kube-controller-manager
+          - system:node
+  
+        # Do not log from collector
+        - level: None
+          users:
+          - system:serviceaccount:collectorforkubernetes:collectorforkubernetes
+  
+        # Don't log nodes communications
+        - level: None
+          userGroups:
+          - system:nodes
+  
+        # Don't log these read-only URLs.
+        - level: None
+          nonResourceURLs:
+          - /healthz*
+          - /version
+          - /swagger*
+  
+        # Log configmap and secret changes in all namespaces at the metadata level.
+        - level: Metadata
+          resources:
+          - resources: ["secrets", "configmaps"]
+  
+        # A catch-all rule to log all other requests at the request level.
+        - level: Request
+  
+#
+# There might be a lot of changes to the api-server manifest. Each
+# change would restart the apiserver pod. It might be better to
+# stop the kubelet and restart it when we are done.
+- name: Stop kubelet.
+  systemd:
+    state: stopped
+    name: kubelet
+  
+- name: 3.2.1 - Check audit policy flag exists.
+  shell: grep audit-policy-file /etc/kubernetes/manifests/kube-apiserver.yaml | grep audit-policy-file
+  register: audit_policy_file_flag
+  check_mode: no
+  ignore_errors: yes
+  changed_when: no
+  
+- name: 3.2.1 - Add audit parameters.
+  replace:
+    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+    regexp: '^(.*tls-private-key-file=.*)$'
+    replace: '\1\n    - --audit-policy-file=/etc/kubernetes/policies/audit-policy.yaml\n    - --audit-log-path=/var/log/apiserver/audit.log\n    - --audit-log-maxbackup=10\n    - --audit-log-maxage=30\n    - --audit-log-maxsize=100\n    - --feature-gates=AdvancedAuditing=false'
+  when: audit_policy_file_flag.rc != 0
+  
+- name: 3.2.1 - Add volume mounts to end of list.
+  replace:
+    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+    regexp: '^  hostNetwork: true$'
+    replace: '    - mountPath: /etc/kubernetes/policies\n      name: policies\n      readOnly: true\n    - mountPath: /var/log/apiserver\n      name: log\n  hostNetwork: true'
+  when: audit_policy_file_flag.rc != 0
+  
+- name: 3.2.1 - Add volumes to end of list.
+  replace:
+    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+    regexp: '^status: {}$'
+    replace: '  - hostPath:\n      path: /etc/kubernetes/policies\n      type: DirectoryOrCreate\n    name: policies\n  - hostPath:\n      path: /var/log/apiserver\n      type: DirectoryOrCreate\n    name: log\nstatus: {}'
+  when: audit_policy_file_flag.rc != 0
+  
+- name: Start kubelet.
+  systemd:
+    state: started
+    name: kubelet
+  

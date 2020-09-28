@@ -1,0 +1,11 @@
+---
+- name: Ensure that the RotateKubeletServerCertificate argument is set to true
+  become: yes
+  become_user: root
+  lineinfile:
+    path: /etc/kubernetes/manifests/kube-controller-manager.yaml
+    insertafter: "- kube-controller-manager$"
+    line: "    - --feature-gates=RotateKubeletServerCertificate=true"
+    firstmatch: yes
+    state: present
+

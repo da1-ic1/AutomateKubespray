@@ -1,0 +1,8 @@
+---
+# tasks file for cis-benchmark
+
+- import_tasks: 4.2.4_fix.yaml
+- import_tasks: 4.2.6_fix.yaml
+- import_tasks: 4.2.9_fix.yaml
+- import_tasks: 4.2.13_fix.yaml 
+  

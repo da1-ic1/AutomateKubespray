@@ -1,0 +1,16 @@
+- name: 1.1.21 Ensure that the Kubernetes PKI key file permissions are set to 600
+  block:
+
+        - name: 1.1.21 - Find files.
+          find:
+            paths: /etc/kubernetes/pki
+            patterns: "*.key*"
+          register: key_glob
+
+        - name: 1.1.21 - Check permissions.
+          file:
+            path: "{{ item.path }}"
+            mode: "600"
+            state: file
+          with_items: "{{ key_glob.files }}"
+

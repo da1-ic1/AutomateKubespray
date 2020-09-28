@@ -1,0 +1,11 @@
+---
+- name: Ensure that the RotateKubeletServerCertificate argument is set to true
+  become: yes
+  become_user: root
+  lineinfile:
+    path: /etc/kubernetes/manifests/kube-scheduler.yaml
+    insertafter: "- kube-scheduler$"
+    line: "    - --profiling=false"
+    firstmatch: yes
+    state: present
+

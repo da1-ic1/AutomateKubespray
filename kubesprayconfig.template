@@ -1,0 +1,16 @@
+CLUSTER_NAME=""
+AWS_ACCESS_KEY_ID=""
+AWS_SECRET_ACCESS_KEY=""
+KEY_PAIR_NAME=""
+AWS_REGION=""
+LOCAL_PEM_FILE=""
+KMS_ID=""
+
+#optional options
+# AWS_ENCRYPTION_PROVIDER_IMAGE="da1ic1/aws-encryption-provider"
+# MASTER_COUNT=1
+# ETCD_COUNT=1
+# WORKER_COUNT=1
+# MASTER_SIZE="t3.medium"
+# ETCD_SIZE="t3.medium"
+# WORKER_SIZE="t3.medium"

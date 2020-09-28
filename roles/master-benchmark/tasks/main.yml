@@ -1,0 +1,51 @@
+---
+# tasks file for cis-benchmark
+
+
+#
+### 1.x.x Master Controls
+#
+- import_tasks: 1.1.19_fix.yaml
+
+# fixes issue, but kubebench fails in audit command
+- import_tasks: 1.1.20_fix.yaml
+- import_tasks: 1.1.21_fix.yaml
+
+# crashes apiserver pod
+#- import_tasks: 1.2.1_fix.yaml
+
+- import_tasks: 1.2.6_fix.yaml
+
+# crashes apiserver pod
+#- import_tasks: 1.2.10_fix.yaml
+
+- import_tasks: 1.2.12_fix.yaml
+
+- import_tasks: 1.2.16_fix.yaml
+
+- import_tasks: 1.2.35_fix.yaml
+ 
+- import_tasks: 1.3.6_fix.yaml
+
+# crashes controller-manager pod
+- import_tasks: 1.3.7_fix.yaml
+
+- import_tasks: 1.4.1_fix.yaml
+
+# crashes scheduler pod
+#- import_tasks: 1.4.2_fix.yaml
+
+
+#
+### 3.x ControlPlane Controls
+#
+
+- import_tasks: 3.2.1_fix.yaml
+
+
+
+#
+### 4.x Worker Node Controls
+#
+
+- import_tasks: 4.2.12_fix.yaml

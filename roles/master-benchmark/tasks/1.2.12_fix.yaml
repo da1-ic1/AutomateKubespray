@@ -1,0 +1,14 @@
+- name: 1.2.12 Ensure that the admission control plugin AlwaysPullImages is set
+  block:
+    - name: test for line
+      shell: grep "^.*--enable-admission-plugins=.*$" /etc/kubernetes/manifests/kube-apiserver.yaml | grep -c AlwaysPullImages
+      register: test_flag
+      ignore_errors: yes
+
+    - name: check for Always PullImages
+      lineinfile:
+        path: /etc/kubernetes/manifests/kube-apiserver.yaml
+        regex: '^(.*--enable-admission-plugins=.*)$'
+        line: '\1,AlwaysPullImages'
+        backrefs: yes
+      when: test_flag.stdout == "0"

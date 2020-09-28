@@ -1,0 +1,5 @@
+    - name: 1.2.1 Ensure that the --anonymous-auth argument is set to false
+      lineinfile:
+        path: /etc/kubernetes/manifests/kube-apiserver.yaml
+        regexp: '^    - --anonymous-auth=True'
+        line: "    - --anonymous-auth=False"

@@ -1,0 +1,11 @@
+---
+- name: Ensure that the --bind-address argument is set to 127.0.0.1 
+  become: yes
+  become_user: root
+  lineinfile:
+    path: /etc/kubernetes/manifests/kube-controller-manager.yaml
+    regexp: "--bind-address="
+    line: "    - --bind-address=127.0.0.1"
+    firstmatch: yes
+    state: present
+

@@ -1,0 +1,17 @@
+- name: 4.2.12 Ensure that the RotateKubeletServerCertificate argument is set to true
+  block:
+  - shell: grep KUBELET_CERTIFICATE_ARGS /var/lib/kubelet/kubeadm-flags.env
+    register: exist_flag
+    ignore_errors: yes
+
+  - lineinfile:
+      path: /var/lib/kubelet/kubeadm-flags.env
+      regexp: ^=KUBELET_CERTIFICATE_ARGS="([^"]+)"$
+      line: '\1 --feature-gates=RotateKubeletServerCertificate=true'
+      backrefs: yes
+    when: exist_flag.stdout == "0"
+
+  - lineinfile:
+      path: /var/lib/kubelet/kubeadm-flags.env
+      line: 'KUBELET_CERTIFICATE_ARGS="--feature-gates=RotateKubeletServerCertificate=true"'
+    when: exist_flag.stdout != "0"

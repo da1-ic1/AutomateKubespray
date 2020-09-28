@@ -1,0 +1,7 @@
+---
+- name: 4.2.4 lineinfile for kernel defaults setting  
+  lineinfile:
+    path: /var/lib/kubelet/config.yaml 
+    regexp: '^readOnlyPort'
+    line: 'readOnlyPort: 0'
+

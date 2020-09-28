@@ -1,0 +1,67 @@
+- hosts: kube-master
+  any_errors_fatal: ""
+  become: yes
+  gather_facts: False
+  roles:
+    - kubespray-defaults
+  tasks:  
+  - copy:
+      dest: /etc/kubernetes/ssl/secrets_encryption.yaml 
+      content: |
+        apiVersion: apiserver.config.k8s.io/v1
+        kind: EncryptionConfiguration
+        resources:
+          - resources:
+              - secrets
+            providers:
+            - kms:
+                name: aws-encryption-provider
+                endpoint: unix:///var/run/kmsplugin/socket.sock
+                cachesize: 1000
+                timeout: 3s
+            - identity: {}
+      
+  - copy:
+      dest: /etc/kubernetes/manifests/aws-encryption-provider.yaml
+      content: |
+        apiVersion: v1
+        kind: Pod
+        metadata:
+          labels:
+            component: encryption-provider
+            tier: control-plane
+          name: aws-encryption-provider
+          namespace: kube-system
+        spec:
+          containers:
+          - image: {{ AWS_ENCRYPTION_PROVIDER_IMAGE }}
+            name: aws-encryption-provider
+            command:
+            - /aws-encryption-provider
+            - --key={{ AWS_KEY_ARN }}
+            - --region={{ AWS_REGION }}
+            - --listen=/var/run/kmsplugin/socket.sock
+            ports:
+            - containerPort: 8080
+              protocol: TCP
+            livenessProbe:
+              httpGet:
+                path: /healthz
+                port: 8080
+            volumeMounts:
+            - mountPath: /var/run/kmsplugin
+              name: var-run-kmsplugin
+          volumes:
+          - name: var-run-kmsplugin
+            hostPath:
+              path: /var/run/kmsplugin
+              type: DirectoryOrCreate
+  - lineinfile:
+        dest: /etc/kubernetes/manifests/kube-apiserver.yaml 
+        insertafter: "{{ item.insert }}"
+        line: "{{ item.line }}"
+    with_items:
+      - { insert: '- kube-apiserver', line: '    - --encryption-provider-config=/etc/kubernetes/ssl/secrets_encryption.yaml' }
+      - { insert: 'volumeMounts:', line: "    - mountPath: /var/run/kmsplugin\n      name: var-run-kmsplugin" }
+      - { insert: 'volumes:', line: "  - name: var-run-kmsplugin\n    hostPath:\n      path: /var/run/kmsplugin\n      type: DirectoryOrCreate" }
+               

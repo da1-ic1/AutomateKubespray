@@ -1,0 +1,5 @@
+---
+- name: 4.2.6 lineinfile for kernel defaults setting  
+  lineinfile:
+    path: /etc/kubernetes/kubelet-config.yaml
+    line: 'protectKernelDefaults: true'

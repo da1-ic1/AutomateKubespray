@@ -1,0 +1,22 @@
+- name: 4.2.13 Ensure that the Kubelet only makes use of Strong Cryptographic Ciphers
+  block:
+    - name: 4.2.13 check flag
+      command: grep "^\-\-tls-cipher-suites=" /etc/kubernetes/kubelet.env
+      register: tls_cipher_suites_flag
+      check_mode: no
+      ignore_errors: yes
+      changed_when: no
+
+    # This is a long shell command but I don't know any way to shorten it.
+    - name: 4.2.13 add flag
+      shell: sed -i 's^--config=/etc/kubernetes/kubelet-config.yaml \\^--config=/etc/kubernetes/kubelet-config.yaml \\\n--tls-cipher-suites=TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_128_GCM_SHA256 \\^' /etc/kubernetes/kubelet.env
+      args:
+        warn: false
+      when: tls_cipher_suites_flag.rc != 0
+
+    - name: 4.2.13 Restart kubelet
+      systemd:
+        daemon_reload: yes
+        enabled: yes
+        name: kubelet
+        state: restarted
