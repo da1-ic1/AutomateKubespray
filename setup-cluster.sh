@@ -12,10 +12,10 @@
 ### These example config options can be copied from the kubesprayconfig.template 
 ### file in the root of the project.
 #
-# AWS_ACCESS_KEY_ID=XXXXAXLXXX3DH2FGKSXXX
-# AWS_SECRET_ACCESS_KEY=XXXdvxqDOX4RXJNXXXRZI/HD02WDW2SwV5Ck8XXX
+# AWS_ACCESS_KEY_ID=XXXXXXXXXXX
+# AWS_SECRET_ACCESS_KEY=XXXXXXXXXXXXXXXXXXXXXXXX
 # AWS_REGION=us-east-1
-# CLUSTER_NAME=va-oit-blue.cloud
+# CLUSTER_NAME=my.cluster.cloud
 # KEY_PAIR_NAME=test-kp
 # LOCAL_PEM_FILE=/home/user/.ssh/test-kp.pem
 # KMS_ID=XXXXXXXXXXXX
@@ -284,9 +284,9 @@ fi
 
 
 # Download and apply RBAC policies for PodSecurityPolicy configuration
-kubectl apply -f https://gist.githubusercontent.com/medined/73cfb72c240a413eaf499392fe4026cf/raw/a24a6c9da7d1b19195a0b0ac777e9032a3bc8ec3/rbac-for-pod-security-policies.yaml
+kubectl apply -f rbac-for-pod-security-policies.yaml
 if [ $? != 0 ]; then
-  echo "Download of policies for PodSecurityPolicy failed, PodSecurityPolicy will not be configured!" 
+  echo "Apply failed, PodSecurityPolicy will not be configured!" 
   sleep 10
 fi
 
