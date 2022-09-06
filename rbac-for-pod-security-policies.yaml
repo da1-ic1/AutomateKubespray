@@ -1,0 +1,134 @@
+---
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: privileged
+  annotations:
+    seccomp.security.alpha.kubernetes.io/allowedProfileNames: "*"
+  labels:
+    addonmanager.kubernetes.io/mode: EnsureExists
+spec:
+  privileged: true
+  allowPrivilegeEscalation: true
+  allowedCapabilities: ['*']
+  volumes: ['*']
+  hostNetwork: true
+  hostIPC:     true
+  hostPID:     true
+  hostPorts: [{ min: 0, max: 65535 }]
+  runAsUser:          { rule: RunAsAny }
+  seLinux:            { rule: RunAsAny }
+  supplementalGroups: { rule: RunAsAny }
+  fsGroup:            { rule: RunAsAny }
+---
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: restricted
+  labels:
+    addonmanager.kubernetes.io/mode: EnsureExists
+  annotations:
+    seccomp.security.alpha.kubernetes.io/allowedProfileNames: 'docker/default,runtime/default'
+    seccomp.security.alpha.kubernetes.io/defaultProfileName:  'runtime/default'
+spec:
+  # Restrict pods to just a /pod directory and ensure that it is read-only.
+  allowedHostPaths:
+    - pathPrefix: /pod
+      readOnly: true
+
+  privileged: false
+  allowPrivilegeEscalation: false
+  # This is redundant with non-root + disallow privilege escalation, but we can provide it for defense in depth.
+  requiredDropCapabilities: [ALL]
+  readOnlyRootFilesystem: true
+
+  hostNetwork: false
+  hostIPC:     false
+  hostPID:     false
+
+  runAsUser:
+    # Require the container to run without root privileges.
+    rule: MustRunAsNonRoot
+
+  seLinux:
+    # Assume nodes are using AppArmor rather than SELinux.
+    rule: RunAsAny
+
+  # Forbid adding the root group.
+  supplementalGroups:
+    rule: MustRunAs
+    ranges: [{ min: 1, max: 65535 }]
+
+  # Forbid adding the root group.
+  fsGroup:
+    rule: MustRunAs
+    ranges: [{ min: 1, max: 65535 }]
+
+  # Allow core volume types. Assume that persistentVolumes set up by the cluster admin are safe to use.
+  volumes:
+    - configMap
+    - downwardAPI
+    - emptyDir
+    - persistentVolumeClaim
+    - projected
+    - secret
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: psp:privileged
+  labels:
+    addonmanager.kubernetes.io/mode: EnsureExists
+rules:
+- apiGroups: ['extensions']
+  resources: ['podsecuritypolicies']
+  verbs:     ['use']
+  resourceNames:
+  - privileged
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: psp:restricted
+  labels:
+    addonmanager.kubernetes.io/mode: EnsureExists
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: default:restricted
+  labels:
+    addonmanager.kubernetes.io/mode: EnsureExists
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind:     ClusterRole
+  name:     psp:restricted
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind:     Group
+  name:     system:authenticated
+- apiGroup: rbac.authorization.k8s.io
+  kind:     Group
+  name:     system:serviceaccounts
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: default:privileged
+  namespace: kube-system
+  labels:
+    addonmanager.kubernetes.io/mode: EnsureExists
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind:     ClusterRole
+  name:     psp:privileged
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind:     Group
+  name:     system:masters
+- apiGroup: rbac.authorization.k8s.io
+  kind:     Group
+  name:     system:nodes
+- apiGroup: rbac.authorization.k8s.io
+  kind:     Group
+  name:     system:serviceaccounts:kube-system
