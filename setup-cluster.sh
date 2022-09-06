@@ -5,8 +5,6 @@
 #Description    : Automates the generation of a k8s cluster with kubespray and hardens it according to 
 #                 the CIS 1.5 Controls. This script also requires that it is sourced at runtime
 #Args		: Configuration file w/ '-f file.config'
-#Author		: David Andrade iC-1 Solutions
-#Email		: Da1@ic-1.com
 #######################################################################################################
 
 
