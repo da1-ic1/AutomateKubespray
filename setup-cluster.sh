@@ -138,7 +138,10 @@ if [ -z $KMS_ID ]; then
   echo "ERROR: Missing environment variable: KMS_ID"
   return
 fi
-
+if [ -z $AWS_ENCRYPTION_PROVIDER_IMAG ]; then
+  echo "ERROR: Missing environment variable: AWS_ENCRYPTION_PROVIDER_IMAG"
+  return
+fi
 
 # Then tests for required prerequisites. A list of prereqs can be found in the repo README.
 terraform --version > /dev/null 2>&1
@@ -174,9 +177,6 @@ fi
 
 
 # Sets up default values for the optional config parameters
-if [ -z $AWS_ENCRYPTION_PROVIDER_IMAGE ]; then
-  AWS_ENCRYPTION_PROVIDER_IMAGE="da1ic1/aws-encryption-provider"
-fi
 if [ -z $MASTER_COUNT  ]; then
   MASTER_COUNT=1
 fi
