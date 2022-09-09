@@ -1,3 +1,7 @@
+
+## You'll need to create an AWS encryption provider, see the AWS documentation on how to do this.
+
+# AWS_ENCRYPTION_PROVIDER_IMAGE="my-user/my-encryption-provider"
 CLUSTER_NAME=""
 AWS_ACCESS_KEY_ID=""
 AWS_SECRET_ACCESS_KEY=""
@@ -7,7 +11,8 @@ LOCAL_PEM_FILE=""
 KMS_ID=""
 
 #optional options
-# AWS_ENCRYPTION_PROVIDER_IMAGE="da1ic1/aws-encryption-provider"
+
+
 # MASTER_COUNT=1
 # ETCD_COUNT=1
 # WORKER_COUNT=1
